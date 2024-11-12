@@ -1,0 +1,7 @@
+<!-- res/xml/network-security-config.xml -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Replace with your IP address -->
+        <domain includeSubdomains="true">192.168.9.230</domain>
+    </domain-config>
+</network-security-config>

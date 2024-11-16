@@ -11,8 +11,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             UffTheme {
-                val navController = rememberNavController()
-                AppNavHost(navController = navController)
+                val navController = rememberNavController() // Remember the NavController
+                AppNavHost(navController = navController) // Pass NavController to NavHost
             }
         }
     }

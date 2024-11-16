@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
 
-    private const val BASE_URL = "http://192.168.9.230:8000/api/" // Ensure this matches the backend server URL
+    private const val BASE_URL = "http://192.168.31.242:8000/api/" // Django backend URL
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)

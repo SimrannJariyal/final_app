@@ -48,7 +48,6 @@ android {
         }
     }
 }
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -60,6 +59,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,20 +68,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Use Gson here
+    // Retrofit and Gson dependencies
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Moshi dependencies
     implementation("com.squareup.moshi:moshi:1.12.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Gson converter
 
-    // Gson
-    implementation("com.google.code.gson:gson:2.8.8")
+    // Lifecycle and ViewModel Compose integration
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 
-    implementation ("com.squareup.retrofit2:retrofit:2.x.x")
-    implementation ("com.squareup.retrofit2:converter-gson:2.x.x")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    // Image loading library
     implementation("io.coil-kt:coil-compose:2.1.0")
-
-
 }

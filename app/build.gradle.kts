@@ -29,19 +29,24 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
     buildFeatures {
         compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -49,17 +54,17 @@ android {
     }
 }
 dependencies {
+    // Core libraries
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.runtime.ktx)
-    implementation(libs.androidx.navigation.compose)
 
+    // Use latest version of Compose UI and Material3
+    implementation("androidx.compose.material3:material3:1.3.1") // Material3
+    implementation("androidx.compose.ui:ui:1.5.1") // Latest Compose UI version
+    implementation("androidx.navigation:navigation-compose:2.8.3") // Navigation for Compose
+
+    // Testing Libraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,17 +73,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Retrofit and Gson dependencies
+    // Retrofit and Gson dependencies for network calls
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    // Moshi dependencies
+    // Moshi dependencies for JSON parsing
     implementation("com.squareup.moshi:moshi:1.12.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
 
-    // Lifecycle and ViewModel Compose integration
+    // ViewModel integration with Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 
-    // Image loading library
+    // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.1.0")
 }

@@ -12,13 +12,15 @@ import com.example.uff.pages.LoginScreen
 import com.example.uff.pages.RegisterScreen
 import com.example.uff.pages.SearchScreen
 import com.example.uff.pages.NotificationScreen
+import com.example.uff.pages.ProfileScreen
+import com.example.uff.pages.ToDoScreen
 import com.example.uff.pages.UnitScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "mainscreen"
     ) {
         composable("login") {
             LoginScreen(navController = navController)
@@ -38,6 +40,12 @@ fun AppNavHost(navController: NavHostController) {
 
         composable("notifications") {
             NotificationScreen(navController = navController)
+        }
+        composable("profile") {
+            ProfileScreen()
+        }
+        composable("todo") {
+            ToDoScreen()
         }
 
         // This is the route for the subject detail screen, passing subId as an argument

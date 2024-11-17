@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -40,6 +41,7 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectedDrawerItem by remember { mutableStateOf("Home") }
+    var selectedBottomNavItem by remember { mutableStateOf("Home") }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -47,8 +49,13 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
             NavigationDrawerContent(
                 navItems = navItemList,
                 onItemSelected = { label ->
-                    selectedDrawerItem = label
-                    scope.launch { drawerState.close() }
+                    if (label == "Logout") {
+                        handleLogout(navController)
+                    } else {
+                        selectedDrawerItem = label
+                        selectedBottomNavItem = label
+                        scope.launch { drawerState.close() }
+                    }
                 }
             )
         }
@@ -58,7 +65,6 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
                 TopAppBar(
                     title = {
                         Text(
-//                            text = selectedDrawerItem,
                             text = "LearnHub",
                             modifier = Modifier.fillMaxWidth(),
                             style = TextStyle(
@@ -74,6 +80,11 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
                         }
                     },
+                    actions = {
+                        IconButton(onClick = { selectedBottomNavItem = "Search" }) {
+                            Icon(Icons.Default.Search, contentDescription = "Search")
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color(0xFF03A9F4)
                     )
@@ -81,10 +92,12 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
             },
             bottomBar = {
                 NavigationBar {
-                    navItemList.forEachIndexed { index, navItem ->
+                    navItemList.forEach { navItem ->
                         NavigationBarItem(
-                            selected = selectedDrawerItem == navItem.label,
-                            onClick = { selectedDrawerItem = navItem.label },
+                            selected = selectedBottomNavItem == navItem.label,
+                            onClick = {
+                                selectedBottomNavItem = navItem.label
+                            },
                             icon = { Icon(navItem.icon, contentDescription = navItem.label) },
                             label = { Text(navItem.label) }
                         )
@@ -92,22 +105,34 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
                 }
             }
         ) { innerPadding ->
+            // Passing paddingValues into ContentScreen
             ContentScreen(
                 modifier = Modifier.padding(innerPadding),
-                selectedItem = selectedDrawerItem,
-                navController = navController
+                selectedItem = selectedBottomNavItem,
+                navController = navController,
+                paddingValues = innerPadding
             )
         }
     }
 }
 
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier, selectedItem: String, navController: NavController) {
+fun ContentScreen(modifier: Modifier = Modifier, selectedItem: String, navController: NavController, paddingValues: PaddingValues) {
     when (selectedItem) {
         "Home" -> HomeScreen(navController = navController)
-        "Search" -> SearchScreen(navController = navController)
+        "Search" -> SearchScreen(navController = navController, paddingValues = paddingValues)
         "To-Do" -> ToDoScreen()
         "Profile" -> ProfileScreen()
+    }
+}
+
+fun handleLogout(navController: NavController) {
+    // Perform the necessary logout actions such as clearing session, tokens, etc.
+    // Example: Reset any shared preferences or clear session data
+
+    // After performing logout actions, navigate to the login screen
+    navController.navigate("login") {
+        popUpTo("login") { inclusive = true }  // This will clear the back stack
     }
 }
 
@@ -123,14 +148,14 @@ fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) ->
         // LearnHub title at the top
         Text(
             text = "LearnHub",
-            style = MaterialTheme.typography.titleLarge,  // You can adjust the style as needed
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
         // Tagline below the title
         Text(
             text = "Your Knowledge, Organized and Accessible!",
-            style = MaterialTheme.typography.bodyMedium,  // Adjust the style if needed
+            style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
@@ -147,5 +172,14 @@ fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) ->
                 modifier = Modifier.padding(vertical = 4.dp)
             )
         }
+
+        // Logout item at the bottom of the drawer
+        NavigationDrawerItem(
+            label = { Text("Logout") },
+            icon = { Icon(Icons.Default.ExitToApp, contentDescription = "Logout") },
+            selected = false,
+            onClick = { onItemSelected("Logout") },
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
     }
 }

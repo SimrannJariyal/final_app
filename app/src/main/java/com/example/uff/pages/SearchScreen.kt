@@ -1,143 +1,132 @@
 package com.example.uff.pages
 
-import android.content.Context
-import android.content.SharedPreferences
+import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.uff.NavItem
+import com.example.uff.network.RetrofitInstance
+import com.example.uff.models.Subject
+import com.example.uff.network.RetrofitInstance.apiService
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(navController: NavController, modifier: Modifier = Modifier) {
-    // Context for SharedPreferences
-    val context = LocalContext.current
-    val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-    val editor = sharedPreferences.edit()
+fun SearchScreen(navController: NavController, paddingValues: PaddingValues) {
+    var query by remember { mutableStateOf("") }
+    var subjects by remember { mutableStateOf<List<Subject>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current // Get the context for Toast
 
-    // Logout function to clear the access_token
-    fun logout() {
-        editor.remove("access_token")
-        editor.apply()
+    // Launch search logic when query changes or screen is recomposed
+    LaunchedEffect(query) {
+        isLoading = true
 
-        // Navigate to the login screen after logout
-        navController.navigate("login") {
-            popUpTo("login") { inclusive = true }
+        try {
+            // Fetch subjects from the API
+            val subjectsResponse = apiService.getSubjects()
+
+            // Print the raw response for debugging
+            Log.d("APIResponse", "Subjects: $subjectsResponse")
+
+            // Sort the subjects alphabetically
+            subjects = subjectsResponse.sortedBy { it.name }
+
+            // Filter the subjects based on the search query
+            if (query.isNotEmpty()) {
+                subjects = subjects.filter { it.name.contains(query, ignoreCase = true) }
+            }
+
+            isLoading = false
+        } catch (e: Exception) {
+            // Show error toast on failure in a composable context
+            Toast.makeText(context, "Error fetching data", Toast.LENGTH_SHORT).show()
+            isLoading = false
         }
     }
 
-    // Define navigation drawer items
-    val navItems = listOf(
-        NavItem("Home", Icons.Default.Home),
-        NavItem("Profile", Icons.Default.Person),
-        NavItem("To-do", Icons.Default.Create)
-    )
+    // Function to generate a random color
+    fun getRandomColor(): Color {
+        return Color(
+            Random.nextFloat(),
+            Random.nextFloat(),
+            Random.nextFloat()
+        )
+    }
 
-    // Drawer state and coroutine scope
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
-    // Scaffold with ModalNavigationDrawer
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            NavigationDrawerContent(
-                navItems = navItems,
-                onItemSelected = { label ->
-                    when (label) {
-                        "Home" -> navController.navigate("home")
-                        "Profile" -> navController.navigate("profile")
-                        "To-do" -> navController.navigate("todo")
-                    }
-                    scope.launch { drawerState.close() } // Close the drawer after navigation
-                }
-            )
-        }
+    // Layout for the search screen
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)
+        .padding(paddingValues)
     ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Search") },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Open Drawer")
-                        }
-                    }
-                )
-            },
-            content = { innerPadding ->
-                Column(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Logout button
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = { logout() }) {
-                            Text("Logout", color = Color.Red)
-                        }
-                    }
+        // Search box with icon and placeholder text
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp) // Make search bar bigger
+                .background(Color(0xFFB3E5FC)) // Light blue background color
+                .padding(horizontal = 16.dp)
+        ) {
+            Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray)
 
-                    // Main content
+            BasicTextField(
+                value = query,
+                onValueChange = { value -> query = value },
+                singleLine = true,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, color = Color.Black)
+            )
+
+            // Display "Search here" as placeholder when query is empty
+            if (query.isEmpty()) {
+                Text("Search here", style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, color = Color.Gray))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Show loading indicator if searching
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        }
+
+        // Show search results (subjects)
+        if (subjects.isNotEmpty()) {
+            Text("Recommendations:", style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp))
+            Spacer(modifier = Modifier.height(16.dp)) // Increased space between heading and results
+
+            subjects.forEach { subject ->
+                // Display each subject in a rounded box with a random background color
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp) // Increased space between subjects
+                        .background(getRandomColor(), shape = MaterialTheme.shapes.medium)
+                        .padding(18.dp)
+                ) {
                     Text(
-                        text = "Search Page",
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Bold
+                        subject.name,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, color = Color.White)
                     )
                 }
             }
-        )
-    }
-}
-
-@Composable
-fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Navigation Drawer",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        navItems.forEach { item ->
-            NavigationDrawerItem(
-                label = { Text(item.label) },
-                icon = { Icon(item.icon, contentDescription = null) },
-                selected = false, // Handle selection state if needed
-                onClick = { onItemSelected(item.label) },
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
         }
     }
 }

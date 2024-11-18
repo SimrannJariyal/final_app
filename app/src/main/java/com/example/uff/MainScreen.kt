@@ -122,7 +122,7 @@ fun ContentScreen(modifier: Modifier = Modifier, selectedItem: String, navContro
         "Home" -> HomeScreen(navController = navController)
         "Search" -> SearchScreen(navController = navController, paddingValues = paddingValues)
         "To-Do" -> ToDoScreen()
-        "Profile" -> ProfileScreen()
+        "Profile" -> ProfileScreen(navController = navController)
     }
 }
 

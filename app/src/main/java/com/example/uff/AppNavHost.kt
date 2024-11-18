@@ -27,7 +27,7 @@ fun AppNavHost(navController: NavHostController) {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "mainscreen",
+            startDestination = "login",
             modifier = Modifier.padding(paddingValues) // Add padding to the NavHost content
         ) {
             composable("login") {
@@ -51,7 +51,7 @@ fun AppNavHost(navController: NavHostController) {
                 NotificationScreen(navController = navController)
             }
             composable("profile") {
-                ProfileScreen()
+                ProfileScreen(navController = navController)
             }
             composable("todo") {
                 ToDoScreen()

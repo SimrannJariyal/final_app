@@ -3,18 +3,12 @@ package com.example.uff.pages
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import com.example.uff.models.LoginRequest
 import com.example.uff.network.RetrofitInstance
@@ -22,98 +16,67 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    var email by remember { mutableStateOf(TextFieldValue("")) }
+    var password by remember { mutableStateOf(TextFieldValue("")) }
+    var errorMessage by remember { mutableStateOf("") }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp), // Padding for the Box
-        contentAlignment = Alignment.Center // Center the Column inside the Box
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally // Center items horizontally
-        ) {
-            Text(
-                text = "Login",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(bottom = 24.dp) // Spacing before the fields
-            )
+        Text(text = "Login", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(onDone = { /* handle done */ })
-            )
+        Button(
+            onClick = {
+                scope.launch {
+                    try {
+                        val response = RetrofitInstance.apiService.login(
+                            LoginRequest(email = email.text, password = password.text)
+                        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                        // Store user_id in SharedPreferences
+                        val sharedPreferences = navController.context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                        sharedPreferences.edit()
+                            .putString("access_token", response.access_token)
+                            .putInt("user_id", response.user_id)
+                            .apply()
 
-            Button(
-                onClick = {
-                    scope.launch {
-                        try {
-                            val response = RetrofitInstance.apiService.login(
-                                LoginRequest(email = email, password = password)
-                            )
-                            if (response.access_token != null) {
-                                // Save the login state in SharedPreferences
-                                val sharedPreferences = navController.context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                                sharedPreferences.edit().putBoolean("is_logged_in", true).apply()
-
-                                // After successful login, navigate to the home screen
-                                navController.navigate("mainscreen") {
-                                    popUpTo("login") { inclusive = true } // Clear back stack to prevent going back to login
-                                }
-                            }
-                        } catch (e: Exception) {
-                            errorMessage = "Login failed: ${e.localizedMessage}"
-                        }
+                        Toast.makeText(navController.context, "Login successful!", Toast.LENGTH_SHORT).show()
+                        navController.navigate("mainscreen")
+                    } catch (e: Exception) {
+                        errorMessage = "Login failed: ${e.localizedMessage}"
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Login")
-            }
-
-            if (errorMessage.isNotEmpty()) {
-                Text(
-                    text = errorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Register screen link
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Don't have an account? ")
-                TextButton(onClick = { navController.navigate("register") }) {
-                    Text("Register", color = MaterialTheme.colorScheme.primary)
                 }
-            }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Login")
+        }
+
+        if (errorMessage.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
         }
     }
 }

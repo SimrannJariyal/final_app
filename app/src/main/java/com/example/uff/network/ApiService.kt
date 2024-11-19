@@ -11,6 +11,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 
@@ -31,12 +32,11 @@ interface ApiService {
     @GET("users/{id}/")
     suspend fun getUserProfile(@Path("id") userId: Int): User
 
-
     @Multipart
-    @POST("users/{id}/update_profile_photo/")
+    @PUT("users/{id}/update-profile-photo/")
     suspend fun updateProfilePhoto(
         @Path("id") userId: Int,
-        @Part profilePhoto: MultipartBody.Part
+        @Part photo: MultipartBody.Part
     ): User
 
 }

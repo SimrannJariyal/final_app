@@ -132,33 +132,28 @@ fun ProfileScreen(navController: NavController) {
                     selectedPhotoUri?.let { uri ->
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = {
-                            coroutineScope.launch {
-                                try {
-                                    val filePart = MultipartUtils.createImageFilePart(
-                                        "profile_photo",
-                                        uri,
-                                        context
-                                    )
-                                    // Update the profile photo on the server
-                                    val updatedUser = RetrofitInstance.apiService.updateProfilePhoto(
-                                        userId, filePart
-                                    )
+                            if (uri != Uri.EMPTY) {
+                                coroutineScope.launch {
+                                    try {
+                                        val filePart = MultipartUtils.createImageFilePart(
+                                            "profile_photo", uri, context
+                                        )
+                                        val updatedUser = RetrofitInstance.apiService.updateProfilePhoto(
+                                            userId, filePart
+                                        )
 
-                                    // Reset the selected photo
-                                    selectedPhotoUri = null
-
-                                    // Refresh the user profile locally to trigger recomposition
-                                    userProfile = updatedUser
-                                    isLoading = false // Set loading to false
-
-                                    // Show success toast
-                                    Toast.makeText(context, "Profile photo updated!", Toast.LENGTH_SHORT).show()
-
-                                } catch (e: Exception) {
-                                    errorMessage = "Error uploading photo: ${e.localizedMessage}"
-                                    Log.e("ProfileScreen", errorMessage, e)
-                                    Toast.makeText(context, "Error uploading photo", Toast.LENGTH_SHORT).show()
+                                        userProfile = updatedUser
+                                        selectedPhotoUri = null
+                                        isLoading = false
+                                        Toast.makeText(context, "Profile photo updated!", Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        errorMessage = "Error uploading photo: ${e.localizedMessage}"
+                                        Log.e("ProfileScreen", errorMessage, e)
+                                        Toast.makeText(context, "Error uploading photo", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
+                            } else {
+                                Toast.makeText(context, "No photo selected", Toast.LENGTH_SHORT).show()
                             }
                         }) {
                             Text(text = "Save Photo")

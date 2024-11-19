@@ -78,5 +78,14 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Register Link
+        TextButton(onClick = {
+            navController.navigate("register")  // Adjust this to match the route of your register screen
+        }) {
+            Text("Don't have an account? Register here")
+        }
     }
 }

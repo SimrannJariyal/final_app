@@ -3,5 +3,5 @@ data class User(
     val id: Int,
     val username: String,
     val email: String,
-    val profilePhotoUrl: String?
+    val   profile_photo_url: String?
 )

@@ -1,5 +1,6 @@
 package com.example.uff
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -127,14 +128,18 @@ fun ContentScreen(modifier: Modifier = Modifier, selectedItem: String, navContro
 }
 
 fun handleLogout(navController: NavController) {
-    // Perform the necessary logout actions such as clearing session, tokens, etc.
-    // Example: Reset any shared preferences or clear session data
+    // Access shared preferences
+    val sharedPreferences = navController.context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
-    // After performing logout actions, navigate to the login screen
+    // Clear user data from shared preferences
+    sharedPreferences.edit().clear().apply()
+
+    // Navigate to the login screen and clear the back stack
     navController.navigate("login") {
-        popUpTo("login") { inclusive = true }  // This will clear the back stack
+        popUpTo("mainscreen") { inclusive = true } // Ensures the back stack is cleared
     }
 }
+
 
 @Composable
 fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) -> Unit) {
@@ -174,12 +179,14 @@ fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) ->
         }
 
         // Logout item at the bottom of the drawer
+        // Logout item in the navigation drawer
         NavigationDrawerItem(
             label = { Text("Logout") },
             icon = { Icon(Icons.Default.ExitToApp, contentDescription = "Logout") },
             selected = false,
-            onClick = { onItemSelected("Logout") },
+            onClick = { onItemSelected("Logout") }, // Calls handleLogout inside onItemSelected
             modifier = Modifier.padding(vertical = 4.dp)
         )
+
     }
 }

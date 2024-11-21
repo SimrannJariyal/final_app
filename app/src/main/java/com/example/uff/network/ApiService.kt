@@ -7,6 +7,7 @@ import com.example.uff.models.LoginResponse
 import com.example.uff.models.RegisterRequest
 import com.example.uff.models.User
 import okhttp3.MultipartBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Multipart
@@ -36,7 +37,6 @@ interface ApiService {
     @PUT("users/{id}/update-profile-photo/")
     suspend fun updateProfilePhoto(
         @Path("id") userId: Int,
-        @Part photo: MultipartBody.Part
-    ): User
-
+        @Part profilePhoto: MultipartBody.Part
+    ): Response<Map<String, String>>  // Corrected line
 }

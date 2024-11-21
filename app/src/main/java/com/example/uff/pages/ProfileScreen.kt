@@ -25,8 +25,15 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.uff.R
 import com.example.uff.models.User
+import com.example.uff.network.ApiService
 import com.example.uff.network.RetrofitInstance
 import kotlinx.coroutines.launch
+
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import retrofit2.Response
+import java.io.File
 
 @Composable
 fun ProfileScreen(navController: NavController) {
@@ -43,10 +50,9 @@ fun ProfileScreen(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedPhotoUri by remember { mutableStateOf<Uri?>(null) }
-
     val coroutineScope = rememberCoroutineScope()
 
-    // Fetch user profile on screen load
+    // Fetch user profile
     LaunchedEffect(userId) {
         coroutineScope.launch {
             try {
@@ -64,7 +70,31 @@ fun ProfileScreen(navController: NavController) {
     // Image picker
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> selectedPhotoUri = uri }
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedPhotoUri = uri
+            coroutineScope.launch {
+                try {
+                    isLoading = true
+                    val response = UserRepository(RetrofitInstance.apiService).updateProfilePhoto(
+                        userId, uri, context
+                    )
+                    if (response.isSuccessful) {
+                        Toast.makeText(context, "Photo updated successfully", Toast.LENGTH_SHORT).show()
+                        // Refresh user profile
+                        val refreshedProfile = RetrofitInstance.apiService.getUserProfile(userId)
+                        userProfile = refreshedProfile
+                    } else {
+                        Toast.makeText(context, "Error: ${response.message()}", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Error uploading photo", Toast.LENGTH_SHORT).show()
+                } finally {
+                    isLoading = false
+                }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -92,20 +122,24 @@ fun ProfileScreen(navController: NavController) {
                     // Display profile photo
                     val profilePhotoUrl = userProfile?.profile_photo_url
                     Image(
-                        painter = rememberImagePainter(
-                            data = profilePhotoUrl ?: R.drawable.ic_launcher_background,
-                            builder = { crossfade(true) }
-                        ),
+                        painter = rememberImagePainter(profilePhotoUrl ?: R.drawable.ic_launcher_background),
                         contentDescription = "Profile Photo",
                         modifier = Modifier
                             .size(120.dp)
                             .clip(CircleShape)
-                            .background(Color.LightGray)
-                            .padding(8.dp),
+                            .background(Color.LightGray),
                         contentScale = ContentScale.Crop
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
+
+                    // Update photo button
+                    Button(
+                        onClick = { imagePickerLauncher.launch("image/*") },
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Text("Update Photo")
+                    }
 
                     // Display user information
                     userProfile?.let { profile ->
@@ -120,47 +154,27 @@ fun ProfileScreen(navController: NavController) {
                             color = Color.Gray
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Upload button
-                    Button(onClick = { imagePickerLauncher.launch("image/*") }) {
-                        Text(text = "Choose Photo")
-                    }
-
-                    // Save photo button
-                    selectedPhotoUri?.let { uri ->
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = {
-                            if (uri != Uri.EMPTY) {
-                                coroutineScope.launch {
-                                    try {
-                                        val filePart = MultipartUtils.createImageFilePart(
-                                            "profile_photo", uri, context
-                                        )
-                                        val updatedUser = RetrofitInstance.apiService.updateProfilePhoto(
-                                            userId, filePart
-                                        )
-
-                                        userProfile = updatedUser
-                                        selectedPhotoUri = null
-                                        isLoading = false
-                                        Toast.makeText(context, "Profile photo updated!", Toast.LENGTH_SHORT).show()
-                                    } catch (e: Exception) {
-                                        errorMessage = "Error uploading photo: ${e.localizedMessage}"
-                                        Log.e("ProfileScreen", errorMessage, e)
-                                        Toast.makeText(context, "Error uploading photo", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            } else {
-                                Toast.makeText(context, "No photo selected", Toast.LENGTH_SHORT).show()
-                            }
-                        }) {
-                            Text(text = "Save Photo")
-                        }
-                    }
                 }
             }
         }
+    }
+}
+class UserRepository(private val apiService: ApiService) {
+
+    suspend fun updateProfilePhoto(userId: Int, photoUri: Uri, context: Context): Response<Map<String, String>> {
+        val contentResolver = context.contentResolver
+        val inputStream = contentResolver.openInputStream(photoUri)
+        val file = File(context.cacheDir, "profile_photo.jpg")
+
+        inputStream.use { input ->
+            file.outputStream().use { output ->
+                input?.copyTo(output)
+            }
+        }
+
+        val requestBody = RequestBody.create("image/*".toMediaTypeOrNull(), file)
+        val photoPart = MultipartBody.Part.createFormData("profile_photo", file.name, requestBody)
+
+        return apiService.updateProfilePhoto(userId, photoPart)
     }
 }

@@ -1,5 +1,6 @@
 package com.example.uff
 
+import android.content.Context
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
@@ -21,14 +22,15 @@ import com.example.uff.pages.UnitScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
-    Scaffold(
-        // Add the padding to the Scaffold to prevent overlap with the app bar and bottom navigation
+    val context = navController.context
+    val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    val isLoggedIn = sharedPreferences.getString("access_token", null) != null
 
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "login",
-            modifier = Modifier.padding(paddingValues) // Add padding to the NavHost content
+            startDestination = if (isLoggedIn) "mainscreen" else "login",
+            modifier = Modifier.padding(paddingValues)
         ) {
             composable("login") {
                 LoginScreen(navController = navController)
@@ -43,26 +45,25 @@ fun AppNavHost(navController: NavHostController) {
             }
 
             composable("search") {
-                // Pass navController and paddingValues to SearchScreen
                 SearchScreen(navController = navController, paddingValues = paddingValues)
             }
 
             composable("notifications") {
                 NotificationScreen(navController = navController)
             }
+
             composable("profile") {
                 ProfileScreen(navController = navController)
             }
+
             composable("todo") {
                 ToDoScreen()
             }
 
-            // This is the route for the subject detail screen, passing subId as an argument
             composable(
                 "unitscreen/{subId}",
                 arguments = listOf(navArgument("subId") { type = NavType.IntType })
             ) { backStackEntry ->
-                // Retrieve the subId argument from the navigation backStack
                 val subId = backStackEntry.arguments?.getInt("subId") ?: 0
                 UnitScreen(navController = navController, subjectId = subId)
             }

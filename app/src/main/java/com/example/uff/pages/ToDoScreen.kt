@@ -3,6 +3,8 @@ package com.example.uff.pages
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -51,55 +53,97 @@ fun ToDoScreen(navController: NavController) {
         )
     }
 
-    Column(
+    // Column for the content of ToDo screen with scrollable content
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .padding(top = 49.dp)// Add padding for scrollable content
     ) {
-        Text(
-            text = "To-Do List",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // "Add Task" Button placed at the top
+        item {
+            Button(
+                onClick = {
+                    isDialogOpen = true
+                    editingTask = null
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
 
-        if (tasks.isEmpty()) {
-            Text("No tasks available", style = MaterialTheme.typography.bodyLarge)
-        } else {
-            Column {
-                tasks.forEach { task ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                    ) {
-                        Text(
-                            text = task.title,
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-
-                        IconButton(onClick = {
-                            isDialogOpen = true
-                            editingTask = task
-                        }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Task")
-                        }
-
-                        IconButton(onClick = { taskViewModel.deleteTask(task.id) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete Task")
-                        }
-                    }
-                }
+            ) {
+                Text("Add Task")
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Title for the To-Do list
+        item {
+            Text(
+                text = "To-Do List",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
 
-        Button(onClick = {
-            isDialogOpen = true
-            editingTask = null
-        }) {
-            Text("Add Task")
+        // If no tasks are available, show this message
+        item {
+            if (tasks.isEmpty()) {
+                Text("No tasks available", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+
+        // Display task cards
+        items(tasks) { task ->
+            TaskCard(
+                task = task,
+                onEdit = {
+                    isDialogOpen = true
+                    editingTask = task
+                },
+                onDelete = { taskViewModel.deleteTask(task.id) }
+            )
+        }
+    }
+}
+
+
+@Composable
+fun TaskCard(task: Task, onEdit: () -> Unit, onDelete: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = task.title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Text(
+                text = task.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit Task")
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Delete Task")
+                }
+            }
         }
     }
 }

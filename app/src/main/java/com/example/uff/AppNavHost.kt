@@ -2,13 +2,13 @@ package com.example.uff
 
 import android.content.Context
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.uff.pages.HomeScreen
@@ -57,7 +57,7 @@ fun AppNavHost(navController: NavHostController) {
             }
 
             composable("todo") {
-                ToDoScreen()
+                ToDoScreen(navController = navController)
             }
 
             composable(

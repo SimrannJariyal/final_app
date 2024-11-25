@@ -62,7 +62,9 @@ dependencies {
     // Use latest version of Compose UI and Material3
     implementation("androidx.compose.material3:material3:1.3.1") // Material3
     implementation("androidx.compose.ui:ui:1.5.1") // Latest Compose UI version
-    implementation("androidx.navigation:navigation-compose:2.8.3") // Navigation for Compose
+    implementation("androidx.navigation:navigation-compose:2.8.3")
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.play.services.gcm) // Navigation for Compose
 
     // Testing Libraries
     testImplementation(libs.junit)

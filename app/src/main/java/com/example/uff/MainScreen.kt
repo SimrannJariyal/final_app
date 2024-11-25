@@ -1,21 +1,18 @@
 package com.example.uff
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,7 +35,7 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
         NavItem("To-Do", Icons.Default.Create),
         NavItem("Profile", Icons.Default.AccountCircle)
     )
-
+    val sharedPreferences = LocalContext.current.getSharedPreferences("your_preferences", Context.MODE_PRIVATE)
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectedDrawerItem by remember { mutableStateOf("Home") }
@@ -106,40 +103,35 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
                 }
             }
         ) { innerPadding ->
-            // Passing paddingValues into ContentScreen
             ContentScreen(
                 modifier = Modifier.padding(innerPadding),
                 selectedItem = selectedBottomNavItem,
                 navController = navController,
-                paddingValues = innerPadding
+                paddingValues = innerPadding,
+                sharedPreferences = sharedPreferences
             )
         }
     }
 }
 
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier, selectedItem: String, navController: NavController, paddingValues: PaddingValues) {
+fun ContentScreen(modifier: Modifier = Modifier, selectedItem: String, navController: NavController, paddingValues: PaddingValues, sharedPreferences: SharedPreferences) {
     when (selectedItem) {
         "Home" -> HomeScreen(navController = navController)
         "Search" -> SearchScreen(navController = navController, paddingValues = paddingValues)
-        "To-Do" -> ToDoScreen()
+        "To-Do" -> ToDoScreen(navController=navController)
         "Profile" -> ProfileScreen(navController = navController)
     }
 }
 
 fun handleLogout(navController: NavController) {
-    // Access shared preferences
     val sharedPreferences = navController.context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-
-    // Clear user data from shared preferences
     sharedPreferences.edit().clear().apply()
 
-    // Navigate to the login screen and clear the back stack
     navController.navigate("login") {
-        popUpTo("mainscreen") { inclusive = true } // Ensures the back stack is cleared
+        popUpTo("mainscreen") { inclusive = true }
     }
 }
-
 
 @Composable
 fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) -> Unit) {
@@ -150,24 +142,20 @@ fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) ->
             .background(Color.White)
             .padding(16.dp)
     ) {
-        // LearnHub title at the top
         Text(
             text = "LearnHub",
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Tagline below the title
         Text(
             text = "Your Knowledge, Organized and Accessible!",
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Spacer for separation
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Navigation items
         navItems.forEach { item ->
             NavigationDrawerItem(
                 label = { Text(item.label) },
@@ -178,15 +166,12 @@ fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) ->
             )
         }
 
-        // Logout item at the bottom of the drawer
-        // Logout item in the navigation drawer
         NavigationDrawerItem(
             label = { Text("Logout") },
             icon = { Icon(Icons.Default.ExitToApp, contentDescription = "Logout") },
             selected = false,
-            onClick = { onItemSelected("Logout") }, // Calls handleLogout inside onItemSelected
+            onClick = { onItemSelected("Logout") },
             modifier = Modifier.padding(vertical = 4.dp)
         )
-
     }
 }

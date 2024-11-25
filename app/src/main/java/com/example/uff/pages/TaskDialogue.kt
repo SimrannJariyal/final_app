@@ -34,9 +34,17 @@ fun TaskDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { onSave(title, description) }) {
+            Button(
+                onClick = {
+                    if (title.isNotBlank() && description.isNotBlank()) {
+                        onSave(title, description)
+                    }
+                },
+                enabled = title.isNotBlank() && description.isNotBlank()
+            ) {
                 Text("Save")
             }
+
         },
         dismissButton = {
             Button(onClick = onDismiss) {

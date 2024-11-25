@@ -53,10 +53,7 @@ interface ApiService {
     suspend fun createTaskForUser(@Body task: Task): Response<Task>
 
     @PUT("tasks/{id}/")
-    suspend fun updateTask(
-        @Path("id") id: Int,
-        @Body updatedFields: Task
-    ): Response<Task>
+    suspend fun updateTask(@Path("id") id: Int, @Body task: Task): Response<Task>
 
     @DELETE("tasks/{id}/")
     suspend fun deleteTask(@Path("id") id: Int): Response<Void>

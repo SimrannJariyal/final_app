@@ -72,21 +72,26 @@ class TaskViewModel(private val sharedPreferences: SharedPreferences) : ViewMode
             }
         }
     }
+    fun refreshTasks() {
+        fetchTasks()
+    }
 
-    fun updateTask(id: Int, updatedFields: Task) {
+    fun updateTask(id: Int, updatedTask: Task) {
         _isLoading.postValue(true)
         viewModelScope.launch {
             try {
-                val response = repository.updateTask(id, updatedFields)
-                if (response.isSuccessful) fetchTasks()
-                else _errorMessage.postValue("Failed to update task: ${response.errorBody()?.string()}")
+                val response = repository.updateTask(id, updatedTask)
+                if (response.isSuccessful) fetchTasks() // Refresh the list after update
+                else _errorMessage.postValue("Update failed: ${response.errorBody()?.string()}")
             } catch (e: Exception) {
-                _errorMessage.postValue("Failed to update task: ${e.localizedMessage}")
+                _errorMessage.postValue("Error updating task: ${e.localizedMessage}")
             } finally {
                 _isLoading.postValue(false)
             }
         }
     }
+
+
 
     fun deleteTask(id: Int) {
         _isLoading.postValue(true)

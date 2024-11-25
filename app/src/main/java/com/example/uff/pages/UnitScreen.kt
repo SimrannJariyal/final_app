@@ -3,6 +3,8 @@ package com.example.uff.pages
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import android.app.DownloadManager
 import android.os.Environment
@@ -87,17 +89,26 @@ fun openPdfInBrowser(context: Context, pdfUrl: String?) {
         return
     }
 
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(pdfUrl)).apply {
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    }
+    try {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(Uri.parse(pdfUrl), "application/pdf")
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        }
 
-    // Check if there is an app that can handle this intent
-    if (intent.resolveActivity(context.packageManager) != null) {
-        context.startActivity(intent)
-    } else {
-        Toast.makeText(context, "No application found to open PDF.", Toast.LENGTH_SHORT).show()
+        // Verify that there is an app that can handle this intent
+        val packageManager = context.packageManager
+        if (intent.resolveActivity(packageManager) != null) {
+            context.startActivity(intent)
+        } else {
+            Toast.makeText(context, "No app found to open PDF. Try downloading.", Toast.LENGTH_SHORT).show()
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Toast.makeText(context, "Error opening PDF: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }
+
+
 
 // Function to download the PDF using DownloadManager
 fun downloadPdf(context: Context, pdfUrl: String?) {
@@ -107,6 +118,14 @@ fun downloadPdf(context: Context, pdfUrl: String?) {
     }
 
     try {
+        // For Android 10 and above, check if we have permission to write to external storage
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                Toast.makeText(context, "Storage is not available.", Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+
         // Parse the URL
         val downloadUri = Uri.parse(pdfUrl)
 

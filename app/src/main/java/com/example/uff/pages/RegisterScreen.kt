@@ -1,5 +1,6 @@
 package com.example.uff.pages
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -13,8 +14,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.uff.R
 import com.example.uff.models.RegisterRequest
 import com.example.uff.network.RetrofitInstance
 import kotlinx.coroutines.launch
@@ -27,100 +31,112 @@ fun RegisterScreen(navController: NavController) {
     var errorMessage by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
-    // Column wrapped in Box for centering content
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp), // Padding for the Box
-        contentAlignment = Alignment.Center // Center the Column inside the Box
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally // Center items horizontally
-        ) {
-            Text(
-                text = "Register",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(bottom = 24.dp) // Spacing before the fields
-            )
+        // Logo
+        Image(
+            painter = painterResource(id = R.drawable.app_logo), // Replace with your logo
+            contentDescription = "App Logo",
+            modifier = Modifier.size(120.dp)
+        )
 
-            TextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Username") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
+        // Welcome Message
+        Text(
+            text = "Create Your Account",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
 
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
+        Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Join us and start your journey!",
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.Gray
+        )
 
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(onDone = { /* handle done */ })
-            )
+        Spacer(modifier = Modifier.height(24.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+        // Username Input
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            Button(
-                onClick = {
-                    scope.launch {
-                        try {
-                            val response = RetrofitInstance.apiService.register(
-                                RegisterRequest(username = username, email = email, password = password)
-                            )
-                            if (response.message != null) {
-                                // After successful registration, navigate to login screen
-                                navController.navigate("login")
-                            }
-                        } catch (e: Exception) {
-                            errorMessage = "Registration failed: ${e.localizedMessage}"
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Email Input
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email Address") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Password Input
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Register Button
+        Button(
+            onClick = {
+                scope.launch {
+                    try {
+                        val response = RetrofitInstance.apiService.register(
+                            RegisterRequest(username = username, email = email, password = password)
+                        )
+                        if (response.message != null) {
+                            navController.navigate("login")
                         }
+                    } catch (e: Exception) {
+                        errorMessage = "Registration failed: ${e.localizedMessage}"
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Register")
-            }
-
-            if (errorMessage.isNotEmpty()) {
-                Text(
-                    text = errorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Login screen link
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Already have an account? ")
-                TextButton(onClick = { navController.navigate("login") }) {
-                    Text("Login", color = MaterialTheme.colorScheme.primary)
                 }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Sign Up")
+        }
+
+        // Error Message
+        if (errorMessage.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Login Redirect
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Already have an account? ")
+            TextButton(onClick = { navController.navigate("login") }) {
+                Text("Log In", color = MaterialTheme.colorScheme.primary)
             }
         }
     }
 }
-
-

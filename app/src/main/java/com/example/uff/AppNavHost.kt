@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.uff.pages.Contact
 import com.example.uff.pages.HomeScreen
 import com.example.uff.pages.LoginScreen
 import com.example.uff.pages.RegisterScreen
@@ -58,6 +59,10 @@ fun AppNavHost(navController: NavHostController) {
 
             composable("todo") {
                 ToDoScreen(navController = navController)
+            }
+
+            composable("contact") {
+                Contact()
             }
 
             composable(

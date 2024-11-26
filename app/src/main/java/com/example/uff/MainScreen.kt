@@ -29,12 +29,20 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
-    val navItemList = listOf(
+    val navDrawerItemList = listOf(
         NavItem("Home", Icons.Default.Home),
         NavItem("Search", Icons.Default.Search),
         NavItem("To-Do", Icons.Default.Create),
-        NavItem("Profile", Icons.Default.AccountCircle)
+        NavItem("Profile", Icons.Default.AccountCircle),
+        NavItem("Contact Us", Icons.Default.Email), // Keep "Contact Us" only in the drawer
     )
+    val bottomNavItemList = listOf(
+        NavItem("Home", Icons.Default.Home),
+        NavItem("Search", Icons.Default.Search),
+        NavItem("To-Do", Icons.Default.Create),
+        NavItem("Profile", Icons.Default.AccountCircle),
+    ) // Exclude "Contact Us" here
+
     val sharedPreferences = LocalContext.current.getSharedPreferences("your_preferences", Context.MODE_PRIVATE)
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -45,14 +53,19 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
         drawerState = drawerState,
         drawerContent = {
             NavigationDrawerContent(
-                navItems = navItemList,
+                navItems = navDrawerItemList,
                 onItemSelected = { label ->
-                    if (label == "Logout") {
-                        handleLogout(navController)
-                    } else {
-                        selectedDrawerItem = label
-                        selectedBottomNavItem = label
-                        scope.launch { drawerState.close() }
+                    when (label) {
+                        "Logout" -> handleLogout(navController)
+                        "Contact Us" -> {
+                            navController.navigate("contact")
+                            scope.launch { drawerState.close() }
+                        }
+                        else -> {
+                            selectedDrawerItem = label
+                            selectedBottomNavItem = label
+                            scope.launch { drawerState.close() }
+                        }
                     }
                 }
             )
@@ -90,7 +103,7 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
             },
             bottomBar = {
                 NavigationBar {
-                    navItemList.forEach { navItem ->
+                    bottomNavItemList.forEach { navItem ->
                         NavigationBarItem(
                             selected = selectedBottomNavItem == navItem.label,
                             onClick = {
@@ -113,6 +126,7 @@ fun MainScreen(navController: NavController, modifier: Modifier = Modifier) {
         }
     }
 }
+
 
 @Composable
 fun ContentScreen(modifier: Modifier = Modifier, selectedItem: String, navController: NavController, paddingValues: PaddingValues, sharedPreferences: SharedPreferences) {
@@ -137,9 +151,9 @@ fun handleLogout(navController: NavController) {
 fun NavigationDrawerContent(navItems: List<NavItem>, onItemSelected: (String) -> Unit) {
     Column(
         modifier = Modifier
-            .fillMaxWidth(0.7f)
+            .fillMaxWidth(0.7f) // Control the drawer width
             .fillMaxHeight()
-            .background(Color.White)
+            .background(Color.White) // Set background color to white
             .padding(16.dp)
     ) {
         Text(

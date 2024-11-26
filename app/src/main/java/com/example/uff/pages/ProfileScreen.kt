@@ -81,7 +81,6 @@ fun ProfileScreen(navController: NavController) {
                     )
                     if (response.isSuccessful) {
                         Toast.makeText(context, "Photo updated successfully", Toast.LENGTH_SHORT).show()
-                        // Refresh user profile
                         val refreshedProfile = RetrofitInstance.apiService.getUserProfile(userId)
                         userProfile = refreshedProfile
                     } else {
@@ -96,11 +95,7 @@ fun ProfileScreen(navController: NavController) {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         when {
             isLoading -> {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -114,51 +109,114 @@ fun ProfileScreen(navController: NavController) {
             }
             userProfile != null -> {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    // Display profile photo
-                    val profilePhotoUrl = userProfile?.profile_photo_url
-                    Image(
-                        painter = rememberImagePainter(profilePhotoUrl ?: R.drawable.ic_launcher_background),
-                        contentDescription = "Profile Photo",
+                    // Top Section with Background
+                    Box(
                         modifier = Modifier
-                            .size(120.dp)
-                            .clip(CircleShape)
-                            .background(Color.LightGray),
-                        contentScale = ContentScale.Crop
-                    )
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
+                        val profilePhotoUrl = userProfile?.profile_photo_url
+                        Image(
+                            painter = rememberImagePainter(profilePhotoUrl ?: R.drawable.ic_launcher_background),
+                            contentDescription = "Profile Background",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                                .background(Color.LightGray),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // Circular Image Over Background
+                        Image(
+                            painter = rememberImagePainter(profilePhotoUrl ?: R.drawable.ic_launcher_background),
+                            contentDescription = "Profile Photo",
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .align(Alignment.BottomEnd)
+                                .padding(16.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Update photo button
-                    Button(
-                        onClick = { imagePickerLauncher.launch("image/*") },
-                        modifier = Modifier.padding(vertical = 8.dp)
+                    // User Info in Box
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFFF0F0F0))
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.medium)
                     ) {
-                        Text("Update Photo")
+                        Column {
+                            Text(
+                                text = "Username: ${userProfile?.username}",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Email: ${userProfile?.email}",
+                                fontSize = 16.sp,
+                                color = Color.Gray
+                            )
+                        }
                     }
 
-                    // Display user information
-                    userProfile?.let { profile ->
-                        Text(
-                            text = profile.username,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = profile.email,
-                            fontSize = 16.sp,
-                            color = Color.Gray
-                        )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Upload Photo Button
+                    Button(
+                        onClick = { imagePickerLauncher.launch("image/*") },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Text("Upload Photo")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Bottom Buttons: Logout and Contact Us
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(
+                            onClick = { handleLogout(navController) },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        ) {
+                            Text("Logout", color = Color.White)
+                        }
+                        Button(
+                            onClick = { navController.navigate("contact") }
+                        ) {
+                            Text("Contact Us")
+                        }
                     }
                 }
             }
         }
     }
 }
+
+fun handleLogout(navController: NavController) {
+    val context = navController.context
+    val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    sharedPreferences.edit().clear().apply()
+
+    navController.navigate("login") {
+        popUpTo("mainscreen") { inclusive = true }
+    }
+}
+
+
 class UserRepository(private val apiService: ApiService) {
 
     suspend fun updateProfilePhoto(userId: Int, photoUri: Uri, context: Context): Response<Map<String, String>> {

@@ -3,6 +3,7 @@ package com.example.uff.pages
 import android.widget.Toast
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -68,10 +69,11 @@ fun SearchScreen(navController: NavController, paddingValues: PaddingValues) {
     }
 
     // Layout for the search screen
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)
-        .padding(paddingValues)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .padding(paddingValues)
     ) {
         // Search box with icon and placeholder text
         Row(
@@ -120,6 +122,10 @@ fun SearchScreen(navController: NavController, paddingValues: PaddingValues) {
                         .padding(vertical = 8.dp) // Increased space between subjects
                         .background(getRandomColor(), shape = MaterialTheme.shapes.medium)
                         .padding(18.dp)
+                        .clickable {
+                            // Navigate to unit_screen and pass subject ID or name
+                            navController.navigate("unitscreen/${subject.id}")
+                        }
                 ) {
                     Text(
                         subject.name,

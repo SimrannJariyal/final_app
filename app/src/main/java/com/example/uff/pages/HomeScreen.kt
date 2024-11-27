@@ -102,14 +102,14 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth(0.4f)
                     .padding(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEB3B)),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5)),
                 shape = RoundedCornerShape(19.dp)
             ) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Text(
                         text = "Notes",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
                         color = Color.White,
                         modifier = Modifier.padding(16.dp)
                     )

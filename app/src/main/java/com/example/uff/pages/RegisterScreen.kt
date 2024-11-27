@@ -133,9 +133,10 @@ fun RegisterScreen(navController: NavController) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Already have an account? ")
-            TextButton(onClick = { navController.navigate("login") }) {
-                Text("Log In", color = MaterialTheme.colorScheme.primary)
+            TextButton(
+                onClick = { navController.navigate("login") }
+            ) {
+                Text("Already have an account? Log in")
             }
         }
     }

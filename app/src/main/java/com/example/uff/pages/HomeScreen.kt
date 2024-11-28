@@ -100,7 +100,7 @@ fun HomeScreen(
             // "Notes" card (unchanged)
             Card(
                 modifier = Modifier
-                    .fillMaxWidth(0.4f)
+                    .fillMaxWidth(0.9f)
                     .padding(4.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1E88E5)),
                 shape = RoundedCornerShape(19.dp)
@@ -149,8 +149,9 @@ fun HomeScreen(
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
-                                    .size(40.dp) // Icon size
-                                    .background(Color.LightGray, shape = RoundedCornerShape(50)) // Circular background
+                                    .size(40.dp)
+                                    .padding(start = 8.dp) // Icon size
+                                    .background(Color.LightGray, shape = RoundedCornerShape(20)) // Circular background
                             ) {
                                 Image(
                                     painter = rememberAsyncImagePainter(
@@ -158,8 +159,9 @@ fun HomeScreen(
                                     ),
                                     contentDescription = subject.name,
                                     modifier = Modifier
-                                        .size(30.dp) // Size of the icon
-                                        .padding(4.dp)
+                                        .size(43.dp) // Size of the icon
+
+
                                 )
                             }
 
